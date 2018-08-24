@@ -1,0 +1,41 @@
+---
+title: "northstar_analysis"
+author: "MaryJoWebster"
+date: "August 24, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, code=readLines("northstar_import.R"), echo=FALSE, warning=FALSE, message=FALSE}
+
+```
+
+
+#comprehensive support schools
+```{r}
+
+comprehensive_schools <-  schools_identified %>%  filter(level_support=="Comprehensive") %>% select(schoolid, Metro7county, districtname_new, SCHOOLNAME_NEW, district_type, level_support, Title1, student_group, reason_identification )
+
+datatable(comprehensive_schools)
+```
+
+
+
+```{r}
+high_schools <-  schools_identified %>%  filter(school_type=="H") %>% select(schoolid, Metro7county, districtname_new, SCHOOLNAME_NEW, district_type, level_support, Title1, student_group, reason_identification )
+
+datatable(high_schools)
+```
+
+#Schools identified
+
+```{r}
+schools_identified%>% group_by(district_name, school_name, level_support)%>%
+   summarise(count=n()) %>% 
+  knitr::kable("html") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, position="left")
+```
+
