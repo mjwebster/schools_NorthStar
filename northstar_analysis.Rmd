@@ -217,9 +217,11 @@ all_schools %>% group_by(schoolid) %>% summarise(count=n())
 
 # specify keys as environment variables
 
-Sys.setenv("AWS_ACCESS_KEY_ID" = "AKIAJCDLMMUOYSBWRIEQ",
+#Need to add the access keys....................
 
-           "AWS_SECRET_ACCESS_KEY" = "FOSoio2JxM28pjxokD5uPbPb6nOC34Rf13K0Wbzo")
+Sys.setenv("AWS_ACCESS_KEY_ID" = "xxxxxxxxxxxxxxxxxx",
+
+           "AWS_SECRET_ACCESS_KEY" = "xxxxxxxxxxxxxxxxxxx")
 
 get_bucket("strib-data-internal")
 
