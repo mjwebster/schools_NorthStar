@@ -91,7 +91,7 @@ recognition <-  read_excel("2018 North Star Accountability File.xlsx",
 # Pull schoollist and districtlist from server ----------------------------
 
 
-con <- dbConnect(RMySQL::MySQL(), host = ("News-data-core-cluster.cluster-c2rw15kieaez.us-east-2.rds.amazonaws.com"), dbname="Schools", user= ("maryjow"), password=("towns-green-shovel"))
+con <- dbConnect(RMySQL::MySQL(), host = rstudioapi::askForPassword("host"), dbname="Schools", user= rstudioapi::askForPassword("Database user"), password=rstudioapi::askForPassword("Database password"))
 
 
 data1 <- dbSendQuery(con, "select * from DistrictList")
