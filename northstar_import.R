@@ -30,9 +30,9 @@ library(RMySQL)
 
 
 
-schools_identified <-  read_excel("2018 North Star Accountability File test.xlsx", 
+schools_identified <-  read_excel("2018 North Star Accountability File.xlsx", 
                                   sheet='Identified Schools', 
-                                  range="a7:ae28")
+                                  range="a7:ae925")
 
 colnames(schools_identified) <-  c('id_year','district_number','district_type','district_name','school_number',
                                    'school_name','school_type','school_classification','titleI','level_support',
@@ -43,9 +43,9 @@ colnames(schools_identified) <-  c('id_year','district_number','district_type','
                                    'stage2_sevenyr_grad_ID','stage3_cons_att','stage3_cons_att_ID')                                  
                                   
 
-districts_identified <-  read_excel("2018 North Star Accountability File test.xlsx", 
+districts_identified <-  read_excel("2018 North Star Accountability File.xlsx", 
                                     sheet='Identified Districts', 
-                                    range="a4:t6")
+                                    range="a4:t54")
 
 colnames(districts_identified) <-  c('id_year','district_number','district_type','district_name',
                                      'stage1_math_achieve','stage1_match_ach_ID','stage1_reading_achieve',
@@ -54,9 +54,9 @@ colnames(districts_identified) <-  c('id_year','district_number','district_type'
                                      'stage2_reading_prog_ID','stage2_fouryr_grad','stage2_fouryr_grad_ID',
                                      'stage2_sevenyr_grad','stage2_sevenyr_grad_ID','stage3_cons_att','stage3_cons_att_ID')                                  
 
-all_schools <-  read_excel("2018 North Star Accountability File test.xlsx", 
+all_schools <-  read_excel("2018 North Star Accountability File.xlsx", 
                            sheet='School', 
-                           range="a5:ad334")
+                           range="a5:ad49274")
 
 colnames(all_schools) <-  c('id_year','district_number','district_type','district_name','school_number',
                             'school_type','school_classification','school_name','titleI','student_group','group',
@@ -69,9 +69,9 @@ colnames(all_schools) <-  c('id_year','district_number','district_type','distric
 
 
 
-all_districts <-  read_excel("2018 North Star Accountability File test.xlsx", 
+all_districts <-  read_excel("2018 North Star Accountability File.xlsx", 
                            sheet='District', 
-                           range="a5:y108")
+                           range="a5:y14229")
 
 
 colnames(all_districts) <-  c('id_year','district_number','district_type','district_name',
@@ -84,7 +84,9 @@ colnames(all_districts) <-  c('id_year','district_number','district_type','distr
                             'stage2_sevenyr_grad_cohort','stage3_cons_att','stage3_cons_att_count')
 
 
-
+recognition <-  read_excel("2018 North Star Accountability File.xlsx", 
+                           sheet='Recognition-Tableau', 
+                           range="a1:e1037")
 
 # Pull schoollist and districtlist from server ----------------------------
 
@@ -104,6 +106,12 @@ dbClearResult(data1)
 data2 <- dbSendQuery(con, "select * from SchoolList")
 schoollist <- fetch(data2, n=-1)
 dbClearResult(data2)
+
+
+data3 <-  dbSendQuery(con, "select schoolid, pctpoverty, povertycategory from enroll_special
+                      where DataYear='17-18' and grade='All Grades'")
+poverty <-  fetch(data3, n=-1)
+dbClearResult(data3)
 
 
 dbDisconnect(con)
