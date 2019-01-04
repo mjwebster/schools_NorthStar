@@ -8,6 +8,9 @@ output:
     to_depth: 1
     toc_float: true
     theme: flatly
+    
+    
+    #A lot of this code is not annotated and may or may not be useful when next batch of data arrives in 2020
 ---
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE}
