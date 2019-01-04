@@ -20,6 +20,7 @@ library(ggthemes)
 library(waffle)
 library(readxl)
 library(RMySQL)
+library(getPass)
 
 # import_data -------------------------------------------------------------
 
@@ -91,7 +92,7 @@ recognition <-  read_excel("2018 North Star Accountability File.xlsx",
 # Pull schoollist and districtlist from server ----------------------------
 
 
-con <- dbConnect(RMySQL::MySQL(), host = rstudioapi::askForPassword("host"), dbname="Schools", user= rstudioapi::askForPassword("Database user"), password=rstudioapi::askForPassword("Database password"))
+con <- dbConnect(RMySQL::MySQL(), host = getPass::getPass("host"), dbname="Schools", user= getPass::getPass("Database user"), password=getPass::getPass("Database password"))
 
 
 data1 <- dbSendQuery(con, "select * from DistrictList")
@@ -136,11 +137,12 @@ schools_identified <-  schools_identified %>% mutate(schoolid=paste(district_num
 
 #grab just a few of the columns from schoollist
 
-all_schools <-  left_join(all_schools, schoollist %>%  select(1,9,10,11, 17,18,20,21), by=c("schoolid"="SchoolID"))
+
+all_schools <-  left_join(all_schools, schoollist %>%  select(SchoolID, districtname_new, SCHOOLNAME_NEW, Metro7county, Location, Title1, SchoolType), by=c("schoolid"="SchoolID"))
 
 
-schools_identified <-  left_join(schools_identified, schoollist %>% select(1,9,10, 11, 17,18,20,21), by=c("schoolid"="SchoolID")) 
-  
+
+schools_identified <-  left_join(schools_identified, schoollist %>% select(SchoolID, districtname_new, SCHOOLNAME_NEW, Metro7county, Location, Title1, SchoolType), by=c("schoolid"="SchoolID")) 
 
 
 # Join to district list ---------------------------------------------------

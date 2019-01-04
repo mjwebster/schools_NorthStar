@@ -77,24 +77,26 @@ datatable(numschools)
 ```{r}
 
 
+#Schools that are identified for comprehensive support, but they aren't on there due to grad rates only
 
 comprehensive <- schools_identified %>% filter(level_support=="Comprehensive", reason_identification!="Four-year graduation rate below 67%") %>%   group_by(schoolid) %>% summarise(num_comprehensive=n())
 
 
-
+#Schools identified for targeted support, but not just because of grad rates
 targeted <- schools_identified %>% filter(level_support=="Targeted", reason_identification!="Four-year graduation rate below 67%") %>%   group_by(schoolid) %>% summarise(num_targeted=n())
 
 
-
+#Schools getting basic support, but no only due to grad rates
 basicsupport <- schools_identified %>% filter(level_support=="Support", reason_identification!="Four-year graduation rate below 67%") %>%   group_by(schoolid) %>% summarise(num_basic=n())
 
-
+#Schools on the list because of grad rates
 gradrates <- schools_identified %>% filter(reason_identification=="Four-year graduation rate below 67%") %>%   group_by(schoolid) %>% summarise(num_gradrates=n())
+
 
 
 listschools <-  all_schools %>% filter(student_group=="All Students", id_year=="Identification Year: 2018") %>% group_by(schoolid , district_name, school_name ) %>% summarise(count=n())
 
-#rm(listschools_v2)
+
 
 listschools_v2 <- left_join(listschools, comprehensive, by=c("schoolid"="schoolid"))
 
@@ -219,11 +221,11 @@ all_schools %>% group_by(schoolid) %>% summarise(count=n())
 
 #Need to add the access keys....................
 
-Sys.setenv("AWS_ACCESS_KEY_ID" = "xxxxxxxxxxxxxxxxxx",
+Sys.setenv("AWS_ACCESS_KEY_ID" =  rstudioapi::askForPassword("AWS_ACCESS_KEY_ID"),
 
-           "AWS_SECRET_ACCESS_KEY" = "xxxxxxxxxxxxxxxxxxx")
-
-get_bucket("strib-data-internal")
+           "AWS_SECRET_ACCESS_KEY" = rstudioapi::askForPassword("AWS_SECRET_ACCESS_KEY"))
+		   
+		   get_bucket("strib-data-internal")
 
 
 put_object(file = "northstar_analysis.html", object = "projects/schools/northstar_analysis.html", bucket = "strib-data-internal")
