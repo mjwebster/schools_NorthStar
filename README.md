@@ -2,7 +2,7 @@
 MN Dept of Education data release on school accountability (North Star)
 
 Data source: Minnesota Department of Education
-Every two years MDE plans to release this data identifying schools that need additional help. It was released for the first time ever in 2018. This replaced old accountability systems (originally No Child Left Behind and later MMR). 
+Every two years MDE plans to release this data identifying schools that need additional help. It was released for the first time ever in 2018. This replaced old accountability systems (originally No Child Left Behind and later MMR). (In the off years, they are still going to provide updated data)
 
 They provided it under an embargo in summer 2018, a few days before releasing the school test scores. We begged them to release the two files at the time, but they refused. 
 

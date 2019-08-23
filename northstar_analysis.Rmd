@@ -26,11 +26,13 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE, cache=FALSE, fig.height = 3, 
 ```{r}
 
 #create a distinct list of schools
-schools_identified_distinct <- schools_identified %>% group_by(schoolid, district_name, school_name, district_type, school_type, Title1, SchoolType, Location, Metro7county)
+schools_identified_distinct <- schools_identified %>% group_by(schoolid, district_name, school_name, district_type, school_type,  location_strib, metro7_strib)
   
 
-  schools_identified_distinct %>% group_by(Location) %>% summarise(count=n()) %>%     knitr::kable("html") %>% 
+  schools_identified_distinct %>% group_by(location_strib) %>% summarise(count=n()) %>%     knitr::kable("html") %>% 
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, position="left")
+  
+
 ```
 
 
@@ -52,7 +54,7 @@ schools_identified_distinct <- schools_identified %>% group_by(schoolid, distric
 #comprehensive support schools in metro
 ```{r}
 
-comprehensive_schools <-  schools_identified %>%  filter(level_support=="Comprehensive", Metro7county=="yes") %>% select(schoolid, Metro7county, districtname_new, SCHOOLNAME_NEW, district_type, level_support, Title1, student_group, reason_identification )
+comprehensive_schools <-  schools_identified %>%  filter(level_support=="Comprehensive", metro7_strib=="YES") %>% select(schoolid, metro7_strib, district_name, school_name, district_type, level_support, student_group, reason_identification )
 
 datatable(comprehensive_schools)
 ```
@@ -60,9 +62,10 @@ datatable(comprehensive_schools)
 #High schools in the mtro
 
 ```{r}
-high_schools <-  schools_identified %>%  filter(school_type=="H", Metro7county=="yes") %>% select(schoolid, Metro7county, districtname_new, SCHOOLNAME_NEW, district_type, level_support, Title1, student_group, reason_identification )
+high_schools <-  schools_identified %>%  filter(school_type=="H", metro7_strib=="YES") %>% select(schoolid, metro7_strib, district_name, school_name, district_type, level_support, titleI, student_group, reason_identification )
 
 datatable(high_schools)
+
 ```
 
 #Number of schools in each district identified
@@ -109,7 +112,7 @@ listschools_v2 <- left_join(listschools_v2, basicsupport, by=c("schoolid"="schoo
 
 listschools_v2 <- left_join(listschools_v2, gradrates, by=c("schoolid"="schoolid"))
 
-listschools_v2 <-  left_join(listschools_v2, schoollist %>%  select(1, 10, 11, 17, 21), by=c("schoolid"="SchoolID"))
+listschools_v2 <-  left_join(listschools_v2, schoollist %>%  select(schoolid, metro7_strib, location_strib), by=c("schoolid"="schoolid"))
 
 
 
@@ -122,98 +125,10 @@ listschools_v2$num_gradrates[is.na(listschools_v2$num_gradrates)] <-  0
 listschools_v2 <-  listschools_v2 %>% mutate(totalgroups=num_comprehensive+num_targeted+num_basic+num_gradrates)
 
 
-onegroup <-  listschools_v2 %>% filter(totalgroups==1) %>% select(schoolid, district_name, school_name)
-
-onegroup_v2 <-  inner_join(schools_identified, onegroup, by=c("schoolid"="schoolid"))
-
-onegroup_v2 %>% filter(group=="SPED") %>% select(schoolid, district_name.x, school_name.x, reason_identification, student_group, titleI, level_support)
-
-
-onegroup_v2 %>%  filter(group=="SPED") %>% group_by(reason_identification) %>% summarise(count=n()) %>%  kable("html") %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, position="left")
-
-```
-
-```{r}
-listschools_v2 %>% filter(totalgroups>=1) %>% group_by(schoolid) %>% summarise(count=n()) %>% arrange(desc(count))
-
-
-#These schools are identified as both a high school and a middle school
-schools_identified %>% filter(schoolid=="0001-03-390" | schoolid=="0001-03-625" | schoolid=="0917-06-700" | schoolid=="4238-07-010") %>% arrange(schoolid)
-
 
 
 ```
 
-
-```{r}
-onegroup_v2 %>%  filter(group!="SPED") %>% group_by(reason_identification) %>% summarise(count=n()) %>%  kable("html") %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, position="left")
-```
-
-
-
-```{r}
-listschools_v2 <- left_join(listschools_v2, poverty, by=c("schoolid"="schoolid"))
-
-listschools_v2 %>% group_by(povertycategory) %>% summarise(count=n())
-
-#listschools_v2 %>% filter(is.na(povertycategory))
-```
-
-
-```{r}
-listschools_v2 %>% filter(povertycategory=="High") %>% group_by(totalgroups) %>% summarise(count=n())
-```
-
-
-```{r}
-listschools_v2 %>% filter(totalgroups>0, num_comprehensive>=1) %>% group_by(povertycategory) %>% summarise(count=n())
-
-#listschools_v2 %>% filter(totalgroups>0, povertycategory=="Low") %>% select(school_name, totalgroups)
-```
-
-
-```{r}
-listschools_v2 %>% filter(totalgroups>0, is.na(povertycategory))
-```
-
-
-```{r}
-recognition_collapsed <-  recognition %>% group_by(schoolid) %>% summarise(num_recognition=n())
-
-listschools_v2 <- left_join(listschools_v2, recognition_collapsed, by=c("schoolid"="schoolid"))
-
-listschools_v2$num_recognition[is.na(listschools_v2$num_recognition)] <-  0
-
-
-listschools_v2 %>% filter(povertycategory=="High", num_recognition>0) %>% group_by(SchoolType) %>% summarise(count=n())
-```
-
-
-```{r}
-listschools_v2 %>% filter(povertycategory=="High", num_recognition>0, totalgroups>0)
-```
-
-
-```{r}
-write.csv(listschools_v2, "northstar_list_all_schools.csv")
-```
-
-
-
-```{r}
-comprehensive2 <-   inner_join(schools_identified, comprehensive, by=c("schoolid"="schoolid"))
-
-comprehensive2
-```
-
-
-
-
-```{r}
-all_schools %>% group_by(schoolid) %>% summarise(count=n())
-```
 
 
 ```{r movetoS3, echo=FALSE, eval=FALSE, results="hide"}

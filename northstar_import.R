@@ -20,7 +20,7 @@ library(ggthemes)
 library(waffle)
 library(readxl)
 library(RMySQL)
-library(getPass)
+
 
 # import_data -------------------------------------------------------------
 
@@ -30,10 +30,11 @@ library(getPass)
 
 #
 
+thisyear <-  '17-18'
 
 
 
-schools_identified <-  read_excel("2018 North Star Accountability File.xlsx", 
+schools_identified <-  read_excel("./data/2018 North Star Accountability File.xlsx", 
                                   sheet='Identified Schools', 
                                   range="a7:ae925")
 
@@ -46,7 +47,7 @@ colnames(schools_identified) <-  c('id_year','district_number','district_type','
                                    'stage2_sevenyr_grad_ID','stage3_cons_att','stage3_cons_att_ID')                                  
                                   
 
-districts_identified <-  read_excel("2018 North Star Accountability File.xlsx", 
+districts_identified <-  read_excel("./data/2018 North Star Accountability File.xlsx", 
                                     sheet='Identified Districts', 
                                     range="a4:t54")
 
@@ -57,7 +58,7 @@ colnames(districts_identified) <-  c('id_year','district_number','district_type'
                                      'stage2_reading_prog_ID','stage2_fouryr_grad','stage2_fouryr_grad_ID',
                                      'stage2_sevenyr_grad','stage2_sevenyr_grad_ID','stage3_cons_att','stage3_cons_att_ID')                                  
 
-all_schools <-  read_excel("2018 North Star Accountability File.xlsx", 
+all_schools <-  read_excel("./data/2018 North Star Accountability File.xlsx", 
                            sheet='School', 
                            range="a5:ad49274")
 
@@ -72,7 +73,7 @@ colnames(all_schools) <-  c('id_year','district_number','district_type','distric
 
 
 
-all_districts <-  read_excel("2018 North Star Accountability File.xlsx", 
+all_districts <-  read_excel("./data/2018 North Star Accountability File.xlsx", 
                            sheet='District', 
                            range="a5:y14229")
 
@@ -87,14 +88,14 @@ colnames(all_districts) <-  c('id_year','district_number','district_type','distr
                             'stage2_sevenyr_grad_cohort','stage3_cons_att','stage3_cons_att_count')
 
 
-recognition <-  read_excel("2018 North Star Accountability File.xlsx", 
+recognition <-  read_excel("./data/2018 North Star Accountability File.xlsx", 
                            sheet='Recognition-Tableau', 
                            range="a1:e1037")
 
 # Pull schoollist and districtlist from server ----------------------------
 
 
-con <- dbConnect(RMySQL::MySQL(), host = getPass::getPass("host"), dbname="Schools", user= getPass::getPass("Database user"), password=getPass::getPass("Database password"))
+con <- dbConnect(RMySQL::MySQL(), host = Sys.getenv("host"), dbname="Schools",user= Sys.getenv("userid"), password=Sys.getenv("pwd"))
 
 
 data1 <- dbSendQuery(con, "select * from DistrictList")
@@ -104,31 +105,38 @@ data1 <- dbSendQuery(con, "select * from DistrictList")
 districtlist <- fetch(data1, n=-1)
 dbClearResult(data1)
 
+districtlist <-  districtlist %>% clean_names()
 
 
-data2 <- dbSendQuery(con, "select * from SchoolList")
+data2 <- dbSendQuery(con, "select * from schoollist")
 schoollist <- fetch(data2, n=-1)
 dbClearResult(data2)
 
+schoollist <-  schoollist %>% clean_names()
 
 data3 <-  dbSendQuery(con, "select schoolid, pctpoverty, povertycategory from enroll_special
                       where DataYear='17-18' and grade='All Grades'")
 poverty <-  fetch(data3, n=-1)
 dbClearResult(data3)
 
+poverty <-  poverty %>% clean_names()
 
 dbDisconnect(con)
 
 
 # create ID numbers -------------------------------------------------------
 
-all_districts <-  all_districts %>% mutate(districtid=paste(district_number, district_type,"000", sep="-"))
+all_districts <-  all_districts %>% 
+  mutate(districtid=paste(district_number, district_type,"000", sep="-"))
 
-districts_identified <-  districts_identified %>% mutate(districtid=paste(district_number, district_type,"000", sep="-"))
+districts_identified <-  districts_identified %>%
+  mutate(districtid=paste(district_number, district_type,"000", sep="-"))
 
-all_schools <-  all_schools %>%  mutate(schoolid=paste(district_number, district_type, school_number, sep="-"))
+all_schools <-  all_schools %>%
+  mutate(schoolid=paste(district_number, district_type, school_number, sep="-"))
 
-schools_identified <-  schools_identified %>% mutate(schoolid=paste(district_number, district_type, school_number, sep="-"))
+schools_identified <-  schools_identified %>%
+  mutate(schoolid=paste(district_number, district_type, school_number, sep="-"))
 
 
 
@@ -140,11 +148,14 @@ schools_identified <-  schools_identified %>% mutate(schoolid=paste(district_num
 #grab just a few of the columns from schoollist
 
 
-all_schools <-  left_join(all_schools, schoollist %>%  select(SchoolID, districtname_new, SCHOOLNAME_NEW, Metro7county, Location, Title1, SchoolType), by=c("schoolid"="SchoolID"))
+all_schools <-  left_join(all_schools, schoollist %>%
+                            select(schoolid,  metro7_strib, 
+                                   location_strib), by=c("schoolid"="schoolid"))
 
 
 
-schools_identified <-  left_join(schools_identified, schoollist %>% select(SchoolID, districtname_new, SCHOOLNAME_NEW, Metro7county, Location, Title1, SchoolType), by=c("schoolid"="SchoolID")) 
+schools_identified <-  left_join(schools_identified, schoollist %>%
+                                   select(schoolid, metro7_strib, location_strib), by=c("schoolid"="schoolid")) 
 
 
 # Join to district list ---------------------------------------------------
@@ -152,9 +163,11 @@ schools_identified <-  left_join(schools_identified, schoollist %>% select(Schoo
 #names(districtlist)
 
 #grab just a few of the columns from districtlist
-all_districts <- left_join(all_districts, districtlist %>%  select(1,3,10,11,12), by=c("districtid"="IDNumber"))
+all_districts <- left_join(all_districts, districtlist %>%
+                             select(1,3,10,11,12), by=c("districtid"="id_number"))
 
-districts_identified <- left_join(districts_identified, districtlist %>%  select(1,3,10,11,12), by=c("districtid"="IDNumber"))
+districts_identified <- left_join(districts_identified, districtlist %>% 
+                                    select(1,3,10,11,12), by=c("districtid"="id_number"))
 
 
 
